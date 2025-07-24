@@ -1,64 +1,147 @@
-# 2025_f1_predictions
+# F1 Winner Predictor Bundle
 
-# 🏎️ F1 Predictions 2025 - Machine Learning Model
+This repository contains everything you need to train, serve, and interact with an F1 race winner prediction model:
 
-Welcome to the **F1 Predictions 2025** repository! This project uses **machine learning, FastF1 API data, and historical F1 race results** to predict race outcomes for the 2025 Formula 1 season.
+* **Python Backend**
 
-## 🚀 Project Overview
-This repository contains a **Gradient Boosting Machine Learning model** that predicts race results based on past performance, qualifying times, and other structured F1 data. The model leverages:
-- FastF1 API for historical race data
-- 2024 race results
-- 2025 qualifying session results
-- Over the course of the season we will be adding additional data to improve our model as well
-- Feature engineering techniques to improve predictions
+  * Data ingestion & feature engineering using FastF1
+  * Model training & evaluation (Gradient Boosting Classifier)
+  * Streamlit dashboard (light-themed) for ad-hoc predictions
+  * FastAPI service to expose prediction endpoints for external clients
 
-## 📊 Data Sources
-- **FastF1 API**: Fetches lap times, race results, and telemetry data
-- **2025 Qualifying Data**: Used for prediction
-- **Historical F1 Results**: Processed from FastF1 for training the model
+* **Flutter Mobile Client**
 
-## 🏁 How It Works
-1. **Data Collection**: The script pulls relevant F1 data using the FastF1 API.
-2. **Preprocessing & Feature Engineering**: Converts lap times, normalizes driver names, and structures race data.
-3. **Model Training**: A **Gradient Boosting Regressor** is trained using 2024 race results.
-4. **Prediction**: The model predicts race times for 2025 and ranks drivers accordingly.
-5. **Evaluation**: Model performance is measured using **Mean Absolute Error (MAE)**.
+  * Simple UI to request predictions from the FastAPI backend
+  * Podium view, sliders for what‑if analysis, full leaderboard
+  * Buildable as an APK for Android devices
 
-### Dependencies
-- `fastf1`
-- `numpy`
-- `pandas`
-- `scikit-learn`
-- `matplotlib`
+---
 
-## File Structure 
-- For every race the end of the file will be numbered in correlation to the race on the calendar, ex. prediction1 - Australia, prediction2 - China, etc.
+## Repository Structure
 
-## 🔧 Usage
-Run the prediction script:
-```bash
-python3 prediction1.py
 ```
-Expected output:
-```
-🏁 Predicted 2025 Australian GP Winner 🏁
-Driver: Charles Leclerc, Predicted Race Time: 82.67s
-...
-🔍 Model Error (MAE): 3.22 seconds
+/ (root)
+├── python/                         # Python backend & dashboard
+│   ├── train_model.py             # Train & save model artifacts
+│   ├── mymodel.py                 # Unified train/predict CLI script
+│   ├── utils_f1.py                # Shared functions (cache, feature prep, predict)
+│   ├── app.py                     # Streamlit dashboard (light theme)
+│   ├── server/                    # FastAPI server code
+│   │   ├── __init__.py
+│   │   └── main.py                # API endpoints (/predict, /health)
+│   ├── requirements.txt           # Python dependencies
+│   └── .streamlit/config.toml     # Streamlit server config
+
+└── flutter_app/                   # Flutter mobile client
+    ├── pubspec.yaml               # Dart & Flutter dependencies
+    └── lib/
+        ├── main.dart              # App entrypoint
+        ├── providers.dart         # API baseUrl provider
+        ├── models/
+        │   └── prediction.dart    # Prediction data model
+        ├── services/
+        │   └── api.dart           # HTTP client for FastAPI
+        └── screens/
+            └── home_screen.dart   # Main UI with sliders & podium
 ```
 
-## 📈 Model Performance
-The Mean Absolute Error (MAE) is used to evaluate how well the model predicts race times. Lower MAE values indicate more accurate predictions.
+---
 
-## 📌 Future Improvements
-- Incorporate **weather conditions** as a feature
-- Add **pit stop strategies** into the model
-- Explore **deep learning** models for improved accuracy
-- @mar_antaya on Instagram and TikTok will update with the latest predictions before every race of the 2025 F1 season
+## Getting Started
 
-## 📜 License
-This project is licensed under the MIT License.
+### Prerequisites
 
+* Python 3.9+
+* Flutter SDK & Android toolchain (for mobile client)
+* Git
 
-🏎️ **Start predicting F1 races like a data scientist!** 🚀
+### Python Backend Setup
 
+1. **Navigate to the Python folder**
+
+   ```bash
+   cd python
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   sed -i '/^python/d' requirements.txt    # remove the python>=3.9 hint
+   pip install -r requirements.txt
+   ```
+
+3. **Train the model**
+
+   ```bash
+   python train_model.py --train-start 2018 --train-end 2024 --test-year-start 2023
+   ```
+
+   This will generate:
+
+   * `winner_model.pkl`
+   * `feats.parquet`
+   * `feats.cols.json`
+
+4. **Run the FastAPI server**
+
+   ```bash
+   python -m uvicorn server.main:app --host 0.0.0.0 --port 8050
+   ```
+
+   * Health check: `GET http://localhost:8050/health`
+   * Swagger UI:  `http://localhost:8050/docs`
+
+5. **Launch the Streamlit dashboard (optional)**
+
+   ```bash
+   streamlit run app.py --server.address 0.0.0.0 --server.port 8501
+   ```
+
+   Browse to `http://localhost:8501`.
+
+### Flutter Client Setup
+
+1. **Navigate to the Flutter folder**
+
+   ```bash
+   cd ../flutter_app
+   ```
+
+2. **Configure the API base URL**
+   Edit `lib/providers.dart`:
+
+   ```dart
+   const baseUrl = 'http://<YOUR_MACHINE_IP>:8050';
+   ```
+
+3. **Install Flutter dependencies**
+
+   ```bash
+   flutter pub get
+   ```
+
+4. **Run on device or emulator**
+
+   ```bash
+   flutter run
+   ```
+
+5. **Build a release APK**
+
+   ```bash
+   flutter build apk --release
+   ```
+
+   The APK will be at `build/app/outputs/flutter-apk/app-release.apk`.
+
+---
+
+## Usage
+
+* **Streamlit UI**: interactive sliders, manual feature edits, download CSV.
+* **FastAPI**: programmatic access via `/predict?year=2025&round=12&w_grid=1.0&...`
+* **Flutter App**: mobile-friendly endpoint, podium view, full leaderboard.
+
+---
+
+*Happy coding and may the best driver win!*
