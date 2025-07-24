@@ -1,0 +1,10 @@
+fastf1>=3.1.5
+pandas>=2.0
+numpy
+scikit-learn>=1.2
+joblib
+pyarrow
+streamlit
+altair
+fastapi
+uvicorn
